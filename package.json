@@ -11,7 +11,8 @@
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "build": "echo 'Build completed'"
+    "build": "echo 'Build completed'",
+    "prepare": "husky"
   },
   "keywords": [
     "ci-cd",
@@ -19,8 +20,11 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "prettier": "^3.9.5"
   }

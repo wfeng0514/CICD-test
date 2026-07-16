@@ -1,0 +1,28 @@
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔍 Running ESLint..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+npx eslint src/ --max-warnings 0
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Lint failed. Push aborted."
+  echo "   Run 'npm run lint:fix' to fix, then push again."
+  exit 1
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🧪 Running Tests..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+npm test -- --coverage=false
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Tests failed. Push aborted."
+  exit 1
+fi
+
+echo ""
+echo "✅ All checks passed. Pushing..."
+echo ""
