@@ -1,78 +1,79 @@
-name: CD Pipeline
+name: CD Pipeline # 流水线名称，显示在 Actions 面板
 
+# ── 触发器 ─────────────────────────────────────────────
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    branches: [main] # push 到 main 分支自动触发
+  workflow_dispatch: # 允许在 GitHub Actions 页面手动触发
     inputs:
-      environment:
-        description: 'Deployment environment'
-        required: true
-        type: choice
-        default: 'staging'
+      environment: # 手动触发时弹出下拉框选择环境
+        description: 'Deployment environment' # 下拉框的标签文字
+        required: true # 必选
+        type: choice # 单选
+        default: 'staging' # 默认选中 staging
         options:
-          - staging
-          - production
+          - staging # 预发布环境
+          - production # 生产环境
 
 jobs:
-  # ── Deploy ───────────────────────────────────────────
+  # ── 部署阶段 ─────────────────────────────────────────
   deploy:
-    name: Deploy to ${{ github.event.inputs.environment || 'staging' }}
-    runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'staging' }}
+    name: Deploy to ${{ github.event.inputs.environment || 'staging' }} # 动态名称：手动触发取选择值，push 触发 fallback 为 staging
+    runs-on: ubuntu-latest # 运行在 GitHub 的 Linux 虚拟机上
+    environment: ${{ github.event.inputs.environment || 'staging' }} # 关联 GitHub 环境配置（可在 Settings → Environments 配保护规则）
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # 拉取仓库代码
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4 # 安装 Node.js
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'npm' # 缓存 node_modules 加速后续构建
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci # 按 package-lock.json 精确安装（CI 环境推荐 ci 而非 install）
 
       - name: Run tests
-        run: npm test
+        run: npm test # 部署前再跑一次测试，确保万无一失
 
       - name: Build
-        run: npm run build
+        run: npm run build # 构建项目
 
-      - name: Deploy (demo)
+      - name: Deploy (demo) # 实际部署步骤（目前是演示，真实项目替换成 scp / docker push / kubectl 等）
         run: |
           echo "──────────────────────────────────────────"
           echo "🚀 Deploying to ${{ github.event.inputs.environment || 'staging' }}..."
-          echo "📦 Commit: ${{ github.sha }}"
-          echo "🌿 Branch: ${{ github.ref_name }}"
-          echo "👤 By:     ${{ github.actor }}"
+          echo "📦 Commit: ${{ github.sha }}"          # 本次部署的 commit SHA
+          echo "🌿 Branch: ${{ github.ref_name }}"      # 分支名
+          echo "👤 By:     ${{ github.actor }}"         # 触发人
           echo "──────────────────────────────────────────"
           echo "✅ Deploy completed successfully!"
           echo "──────────────────────────────────────────"
 
-  # ── Release ──────────────────────────────────────────
+  # ── 发布阶段 ─────────────────────────────────────────
   release:
-    name: Create Release
+    name: Create Release # 创建 GitHub Release
     runs-on: ubuntu-latest
-    needs: deploy
-    if: github.event.inputs.environment == 'production' || github.ref == 'refs/heads/main'
+    needs: deploy # 等待 deploy 成功后才执行
+    if: github.event.inputs.environment == 'production' || github.ref == 'refs/heads/main' # 仅 production 部署或 push main 时创建 Release，staging 跳过
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Generate release tag
-        id: tag
+      - name: Generate release tag # 自动生成版本号
+        id: tag # 给 step 起名，后面的 step 可以通过 steps.tag.outputs.tag 引用
         run: |
-          TAG="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          TAG="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}" # 格式：v2026.07.16-b56ae2d（日期 + commit 前7位）
+          echo "tag=$TAG" >> $GITHUB_OUTPUT # 输出到 $GITHUB_OUTPUT，供后续 step 使用
           echo "Generated tag: $TAG"
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release # 使用社区 Action 自动创建 Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag }}
+          tag_name: ${{ steps.tag.outputs.tag }} # 引用上一步生成的 tag
           name: Release ${{ steps.tag.outputs.tag }}
-          body: |
+          body: | # Release 描述（Markdown）
             ## 🚀 Release ${{ steps.tag.outputs.tag }}
 
             - **Commit:** ${{ github.sha }}
@@ -80,5 +81,5 @@ jobs:
             - **Triggered by:** @${{ github.actor }}
 
             Auto-generated release from CD pipeline.
-          draft: false
-          prerelease: false
+          draft: false # 不是草稿，直接发布
+          prerelease: false # 不是预发布版本，是正式 Release
