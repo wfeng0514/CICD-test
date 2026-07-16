@@ -40,7 +40,7 @@ jobs:
       - name: Build
         run: npm run build # 构建项目
 
-      - name: Deploy (demo) # 实际部署步骤（目前是演示，真实项目替换成 scp / docker push / kubectl 等）
+      - name: Deploy (demo) # 实际部署步骤（目前是演示，真实项目替换成下面的例子）
         run: |
           echo "──────────────────────────────────────────"
           echo "🚀 Deploying to ${{ github.event.inputs.environment || 'staging' }}..."
@@ -50,6 +50,77 @@ jobs:
           echo "──────────────────────────────────────────"
           echo "✅ Deploy completed successfully!"
           echo "──────────────────────────────────────────"
+
+      # ═══════════════════════════════════════════════════
+      # 以下是真实项目的部署例子，使用时取消注释即可
+      # ═══════════════════════════════════════════════════
+
+      # ── 例子 1：SCP 上传到服务器 ──────────────────────
+      # - name: Deploy via SCP
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.SERVER_HOST }}       # 服务器 IP，存于 Settings → Secrets
+      #     username: ${{ secrets.SERVER_USER }}   # 用户名
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}    # SSH 私钥
+      #     source: 'dist/'                        # 本地构建产物目录
+      #     target: '/var/www/app/'                # 服务器目标路径
+      #     strip_components: 1
+      #
+      # - name: Restart service
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.SERVER_HOST }}
+      #     username: ${{ secrets.SERVER_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       cd /var/www/app
+      #       pm2 restart app   # 重启 Node 应用
+
+      # ── 例子 2：Docker 构建 + 推送 + 部署 ────────────
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_TOKEN }}
+      #
+      # - name: Build and push Docker image
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: .
+      #     push: true
+      #     tags: |
+      #       username/myapp:latest
+      #       username/myapp:${{ github.sha }}
+      #
+      # - name: Deploy to server via SSH
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.SERVER_HOST }}
+      #     username: ${{ secrets.SERVER_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       docker pull username/myapp:latest
+      #       docker stop myapp || true
+      #       docker rm myapp || true
+      #       docker run -d --name myapp -p 3000:3000 username/myapp:latest
+
+      # ── 例子 3：Kubernetes (kubectl) ──────────────────
+      # - name: Deploy to K8s
+      #   uses: azure/k8s-deploy@v5
+      #   with:
+      #     namespace: ${{ secrets.K8S_NAMESPACE }}
+      #     manifests: k8s/*.yml                    # k8s 配置目录
+      #     images: username/myapp:${{ github.sha }}
+      #     imagepullsecrets: ${{ secrets.K8S_SECRET }}
+
+      # ── 例子 4：Vercel / Netlify（前端静态站点）──────
+      # - name: Deploy to Vercel
+      #   uses: amondnet/vercel-action@v25
+      #   with:
+      #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
+      #     vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+      #     vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+      #     vercel-args: '--prod'                   # 生产部署
 
   # ── 发布阶段 ─────────────────────────────────────────
   release:
