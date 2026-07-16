@@ -49,4 +49,5 @@ if (require.main === module) {
   console.log('10 / 2 =', divide(10, 2));
   console.log('fib(10) =', fibonacci(10));
   const unusedVar = 'this will fail lint';
+  const unusedVar1 = 'this will fail lint';
 }
