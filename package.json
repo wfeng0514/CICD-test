@@ -1,0 +1,20 @@
+{
+  "name": "cicd-test",
+  "version": "1.0.0",
+  "description": "A CI/CD testing project with GitHub Actions",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "build": "echo 'Build completed'"
+  },
+  "keywords": ["ci-cd", "github-actions"],
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.56.0"
+  }
+}

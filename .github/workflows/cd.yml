@@ -1,0 +1,84 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        default: 'staging'
+        options:
+          - staging
+          - production
+
+jobs:
+  # ── Deploy ───────────────────────────────────────────
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy (demo)
+        run: |
+          echo "──────────────────────────────────────────"
+          echo "🚀 Deploying to ${{ github.event.inputs.environment || 'staging' }}..."
+          echo "📦 Commit: ${{ github.sha }}"
+          echo "🌿 Branch: ${{ github.ref_name }}"
+          echo "👤 By:     ${{ github.actor }}"
+          echo "──────────────────────────────────────────"
+          echo "✅ Deploy completed successfully!"
+          echo "──────────────────────────────────────────"
+
+  # ── Release ──────────────────────────────────────────
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.event.inputs.environment == 'production' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate release tag
+        id: tag
+        run: |
+          TAG="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Generated tag: $TAG"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Release ${{ steps.tag.outputs.tag }}
+          body: |
+            ## 🚀 Release ${{ steps.tag.outputs.tag }}
+
+            - **Commit:** ${{ github.sha }}
+            - **Branch:** ${{ github.ref_name }}
+            - **Triggered by:** @${{ github.actor }}
+
+            Auto-generated release from CD pipeline.
+          draft: false
+          prerelease: false
