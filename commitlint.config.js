@@ -1,3 +1,4 @@
+// 定义允许的 commit 类型
 module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
@@ -5,16 +6,16 @@ module.exports = {
       2,
       'always',
       [
-        'feat',     // 新功能
-        'fix',      // 修复 bug
-        'docs',     // 文档变更
-        'style',    // 格式调整（不影响代码逻辑）
+        'feat', // 新功能
+        'fix', // 修复 bug
+        'docs', // 文档变更
+        'style', // 格式调整（不影响代码逻辑）
         'refactor', // 重构
-        'perf',     // 性能优化
-        'test',     // 测试相关
-        'chore',    // 构建/工具/依赖
-        'ci',       // CI/CD 配置
-        'revert',   // 回滚
+        'perf', // 性能优化
+        'test', // 测试相关
+        'chore', // 构建/工具/依赖
+        'ci', // CI/CD 配置
+        'revert', // 回滚
       ],
     ],
     'subject-case': [0],

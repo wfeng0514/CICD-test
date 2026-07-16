@@ -1,3 +1,4 @@
+# 提交时校验消息格式
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "📝 Checking commit message..."

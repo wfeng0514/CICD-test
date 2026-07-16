@@ -1,3 +1,4 @@
+# 推送前跑 lint + test
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔍 Running ESLint..."
