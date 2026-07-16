@@ -1,4 +1,4 @@
-const { add, subtract, multiply, divide, greet } = require('./index');
+const { add, subtract, multiply, divide, greet, fibonacci } = require('./index');
 
 describe('Math Utilities', () => {
   describe('add', () => {
@@ -48,6 +48,28 @@ describe('Math Utilities', () => {
   describe('greet', () => {
     test('returns a greeting message', () => {
       expect(greet('Alice')).toBe('Hello, Alice! Welcome to CI/CD testing.');
+    });
+  });
+
+  describe('fibonacci', () => {
+    test('fib(0) = 0', () => {
+      expect(fibonacci(0)).toBe(0);
+    });
+
+    test('fib(1) = 1', () => {
+      expect(fibonacci(1)).toBe(1);
+    });
+
+    test('fib(6) = 8', () => {
+      expect(fibonacci(6)).toBe(8);
+    });
+
+    test('fib(10) = 55', () => {
+      expect(fibonacci(10)).toBe(55);
+    });
+
+    test('throws on negative input', () => {
+      expect(() => fibonacci(-1)).toThrow('Fibonacci is not defined for negative numbers');
     });
   });
 });
