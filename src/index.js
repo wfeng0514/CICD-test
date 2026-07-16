@@ -47,4 +47,5 @@ if (require.main === module) {
   console.log('4 * 6 =', multiply(4, 6));
   console.log('10 / 2 =', divide(10, 2));
   console.log('fib(10) =', fibonacci(10));
+  const unusedVar = 'this will fail lint';
 }
